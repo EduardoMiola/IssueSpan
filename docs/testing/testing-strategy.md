@@ -1,6 +1,6 @@
 # Testing and quality engineering
 
-Status: **CURRENT quality baseline; implementation planned alongside each slice.**
+Status: **CURRENT quality baseline; IS-14 adds the first real PostgreSQL evidence.**
 
 The purpose of testing is executable evidence for architecture guarantees, not a coverage contest. IssueSpan has many fast domain tests, substantial real-infrastructure tests at PostgreSQL/Valkey/queue/provider boundaries, and a small number of expensive browser journeys.
 
@@ -21,6 +21,8 @@ The purpose of testing is executable evidence for architecture guarantees, not a
 | Security | negative corpus and role tests | XSS, SSRF, BOLA, CSRF, tenant boundaries |
 
 SQLite is not a substitute for PostgreSQL: it cannot prove RLS, `SKIP LOCKED`, UUIDv7 behavior, composite constraints, or production transaction semantics. Testcontainers is the default for repository and integration evidence.
+
+IS-14 currently runs `pnpm db:validate`, `pnpm db:generate`, `pnpm db:migrate`, and `pnpm db:test` against PostgreSQL 18. The test command uses `DATABASE_TEST_URL` when supplied so a clean database can be exercised; the CI lane provisions the Compose PostgreSQL service. This is CURRENT evidence for the database boundary, not completion of the future API, queue, provider, or browser lanes.
 
 ## Deterministic test design
 

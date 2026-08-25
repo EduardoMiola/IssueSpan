@@ -22,6 +22,10 @@ Compose injects environment variables from `.env` and the shell. `.env.example` 
 cp .env.example .env
 pnpm infra:up
 pnpm infra:ps
+pnpm db:validate
+pnpm db:generate
+pnpm db:migrate
+pnpm db:test
 ```
 
 The `minio-init` helper creates `issuespan-development` deterministically and exits after success. It is safe to run again because bucket creation uses `--ignore-existing`.
@@ -54,6 +58,8 @@ pnpm infra:down               # stop and remove containers; keep volumes
 ## Connection contract
 
 Host applications use the values in `.env`, especially `DATABASE_URL`, `VALKEY_URL`, `S3_ENDPOINT`, and `S3_BUCKET`. Applications inside Compose use service DNS: PostgreSQL is `postgres:5432`, Valkey is `valkey:6379`, and MinIO is `http://minio:9000`. MinIO uses path-style addressing locally (`S3_FORCE_PATH_STYLE=true`) because it avoids host-bucket DNS setup.
+
+`DATABASE_URL` is the migration/development connection. The migration creates the local-only `issuespan_app` runtime role; `DATABASE_APP_URL` documents that role for runtime-role checks. `DATABASE_TEST_URL` can point at a fresh PostgreSQL database when the preserved Compose volume is not empty. The example password is deliberately local-only and must never be promoted.
 
 The local Valkey command sets `maxmemory-policy noeviction`, the expected policy for BullMQ: queue keys must not silently disappear because of cache eviction. This does not make local Valkey production-safe or durable application truth; PostgreSQL owns durable intent.
 

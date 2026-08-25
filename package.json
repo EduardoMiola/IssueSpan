@@ -3,6 +3,10 @@
   "private": true,
   "packageManager": "pnpm@10.15.0",
   "scripts": {
+    "db:generate": "pnpm --filter @issuespan/database db:generate",
+    "db:migrate": "pnpm --filter @issuespan/database db:migrate",
+    "db:validate": "pnpm --filter @issuespan/database db:validate",
+    "db:test": "pnpm --filter @issuespan/database db:test",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
     "infra:logs": "docker compose logs -f",

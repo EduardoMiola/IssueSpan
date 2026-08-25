@@ -5,3 +5,4 @@
 docker-data/
 node_modules/
 graphify-out/
+packages/database/src/generated/

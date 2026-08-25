@@ -9,7 +9,7 @@ IssueSpan uses OWASP ASVS 5.0 as the control vocabulary. The first release targe
 | V1 Architecture | threat model, trust-boundary diagram, ADRs, abuse cases | PLANNED |
 | V2 Authentication | Argon2id, opaque hashed sessions, idle/absolute expiry, rotation | PLANNED |
 | V3 Session management | Secure HttpOnly `__Host-` cookie, revoke/list sessions, fixation tests | PLANNED |
-| V4 Access control | server-derived TenantContext, capabilities, composite FKs, RLS negative matrix | PLANNED |
+| V4 Access control | `packages/database` TenantContext guard, composite FKs, RLS policies, runtime-role and negative isolation tests | CURRENT for IS-14 database evidence; application authorization PLANNED |
 | V5 Validation | explicit Zod command schemas, mass-assignment tests, bounded sizes | PLANNED |
 | V6 Stored cryptography | KMS/envelope encryption for provider/Zapo secrets; no custom crypto | PLANNED |
 | V7 Error handling | RFC 9457 safe errors, trace IDs, no credential/content leakage | PLANNED |
@@ -19,7 +19,7 @@ IssueSpan uses OWASP ASVS 5.0 as the control vocabulary. The first release targe
 | V11 Business logic | idempotency, rate limits, last-owner invariant, ambiguous delivery state | PLANNED |
 | V12 Files | quarantine, signature/type/size validation, malware scan, signed access | PLANNED |
 | V13 API | OpenAPI schemas, BOLA tests, pagination, tenant-filtered SSE | PLANNED |
-| V14 Configuration | restricted roles, private DB/cache, security headers, no debug endpoints | PLANNED |
+| V14 Configuration | `issuespan_app` is NOSUPERUSER/NOBYPASSRLS and does not own protected tables; local credentials are documented as non-production | CURRENT for IS-14 database evidence; deployment controls PLANNED |
 | V15 Architecture | modular boundaries, dependency direction, secure defaults | PLANNED |
 | V16 Logging | Pino JSON, trace/span IDs, redaction, append-oriented AuditEvent | PLANNED |
 | V17 Testing | security corpus, RLS/RBAC, webhook, SSRF, XSS, failure injection | PLANNED |

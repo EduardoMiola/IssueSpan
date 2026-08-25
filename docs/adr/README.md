@@ -20,6 +20,7 @@ ADRs use a lightweight MADR format: title, status, context, decision, alternativ
 | [0012](0012-docker-aws-opentofu-actions.md) | Docker/AWS/OpenTofu/Actions | ACCEPTED |
 | [0013](0013-build-once-promote-digest.md) | Build once, promote digest | ACCEPTED |
 | [0014](0014-agpl-only-proposed.md) | AGPL-3.0-only proposed license | PROPOSED — legal review required |
+| [0015](0015-database-foundation-tenancy-implementation.md) | IS-14 database foundation and tenancy implementation | ACCEPTED |
 
 ## Prior decision groups
 

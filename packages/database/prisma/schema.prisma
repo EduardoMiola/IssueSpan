@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  email       String       @unique
+  displayName String?
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+  memberships Membership[]
+  sessions    Session[]
+  @@map("users")
+}
+
+model Organization {
+  id          String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  slug        String       @unique
+  name        String
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+  memberships Membership[]
+  accounts    CustomerAccount[]
+  contacts    Contact[]
+  conversations Conversation[]
+  messages    Message[]
+  outbox      OutboxEvent[]
+  @@unique([id])
+  @@map("organizations")
+}
+
+model Membership {
+  id             String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  organizationId String       @db.Uuid
+  userId         String       @db.Uuid
+  role           String
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([organizationId, userId])
+  @@index([organizationId, role])
+  @@map("memberships")
+}
+
+model Session {
+  id        String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(6)
+  revokedAt DateTime? @db.Timestamptz(6)
+  lastSeenAt DateTime? @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
+
+model CustomerAccount {
+  id             String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  organizationId String       @db.Uuid
+  name           String
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(6)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contacts       Contact[]
+  @@unique([organizationId, id])
+  @@index([organizationId, name])
+  @@map("customer_accounts")
+}
+
+model Contact {
+  id                String          @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  organizationId    String          @db.Uuid
+  customerAccountId String          @db.Uuid
+  name              String
+  email             String?
+  createdAt         DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime        @updatedAt @db.Timestamptz(6)
+  organization      Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccount   CustomerAccount @relation(fields: [organizationId, customerAccountId], references: [organizationId, id], onDelete: Cascade)
+  @@unique([organizationId, id])
+  @@index([organizationId, customerAccountId])
+  @@map("contacts")
+}
+
+model Conversation {
+  id             String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  organizationId String       @db.Uuid
+  status         String
+  lastActivityAt DateTime     @default(now()) @db.Timestamptz(6)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(6)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  messages       Message[]
+  @@unique([organizationId, id])
+  @@index([organizationId, status, lastActivityAt(sort: Desc), id(sort: Desc)])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  organizationId String       @db.Uuid
+  conversationId String       @db.Uuid
+  direction      String
+  content        String
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [organizationId, conversationId], references: [organizationId, id], onDelete: Cascade)
+  @@unique([organizationId, id])
+  @@index([organizationId, conversationId, createdAt])
+  @@map("messages")
+}
+
+model OutboxEvent {
+  id             String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  organizationId String       @db.Uuid
+  eventType      String
+  eventVersion   Int          @default(1)
+  aggregateType  String
+  aggregateId    String       @db.Uuid
+  payload        Json
+  occurredAt     DateTime     @default(now()) @db.Timestamptz(6)
+  availableAt    DateTime     @default(now()) @db.Timestamptz(6)
+  attemptCount   Int          @default(0)
+  publishedAt    DateTime?    @db.Timestamptz(6)
+  lastError      String?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@unique([organizationId, id])
+  @@index([organizationId, publishedAt, availableAt])
+  @@map("outbox_events")
+}
