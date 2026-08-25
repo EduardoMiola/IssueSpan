@@ -17,3 +17,7 @@ Add Email through Postmark, GitHub/Jira/Linear integration capabilities, connect
 - A microservice split before operational evidence requires it.
 - A provider-specific domain model.
 - Public customer data, credentials, or production integrations in the repository.
+
+## Guardrails
+
+Do not add microservices, a graph database, generic SMTP first, or provider-specific domain models merely to make the project look larger. Complexity follows measured requirements and ADRs.

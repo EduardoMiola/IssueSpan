@@ -56,3 +56,27 @@ Jira is the delivery system of record. The keys below are the planned sequence; 
 | [IS-32](https://issuespan.atlassian.net/browse/IS-32) | 20 | Operations & Observability | Audit, OpenTelemetry and operations |
 
 All ten tasks were created as Jira `Tarefa`, assigned to Eduardo Ceron, and left in `Tarefas pendentes`.
+
+## Foundation sequence and definition of done
+
+1. IS-13 repository foundation and documentation;
+2. workspace boundaries;
+3. Docker PostgreSQL/Valkey;
+4. Fastify health/readiness and API contracts;
+5. Prisma tenant-aware persistence;
+6. sessions, memberships, and capabilities;
+7. React web shell;
+8. conversations, messages, assignment, status, notes, tags, and search;
+9. outbox and worker;
+10. Zapo adapter and channel-worker ownership;
+11. GitHub impact adapter;
+12. audit, telemetry, security, and release automation;
+13. Email/Postmark and further integrations.
+
+Every task needs explicit acceptance criteria, a Jira-keyed branch/commit/PR, executable validation, tenant/security/observability/failure consideration, updated docs/config, passing CI, and no credentials or unrelated changes.
+
+~~~text
+BACKLOG → READY → IN PROGRESS → IN REVIEW → VERIFICATION → DONE
+~~~
+
+IN REVIEW means code/document review. VERIFICATION means merged behavior is tested. Rework returns to IN PROGRESS.

@@ -24,4 +24,12 @@ IssueSpan is an open-source support platform where customer conversations and en
 - Do not add migrations, infrastructure, credentials, or provider coupling without an explicit decision record.
 - Preserve unrelated working-tree changes.
 
+## Additional constraints
+
+- Every tenant-owned record, cache key, object path, audit event, and async job carries `organization_id`; client input is never authorization.
+- Every implementation starts from a Jira issue in [IS](https://issuespan.atlassian.net/browse/IS), includes its key in branch/commit/PR, and arrives through a PR.
+- Add executable validation and negative cross-tenant tests with behavior changes.
+- Do not put secrets, customer data, provider tokens, or real WhatsApp sessions in the repository.
+- Distinguish frozen, proposed, deferred, and implemented; documentation alone never proves implementation.
+
 The source-of-truth planning documents are under [`docs/`](docs/README.md).
