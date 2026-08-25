@@ -10,3 +10,10 @@
 - Supply chain: dependency review, lockfile, CodeQL, secret scanning, push protection, least-privilege Action permissions, SHA-pinned sensitive actions, and GitHub OIDC federation to AWS.
 
 Controls must be testable and linked to a runbook or evidence artifact. A checkbox without a negative test, configuration check, or review rule is not proof.
+# IS-15 authentication controls
+
+Status: **CURRENT for the controls below; broader security work remains PLANNED.**
+
+- Argon2id password hashes and opaque session credentials are never logged; PostgreSQL stores only a SHA-256 session-token hash.
+- Production session cookies are Secure, HttpOnly, SameSite=Lax, Path=/, and no-Domain. Authenticated mutations require exact Origin and CSRF header/cookie validation.
+- Tenant authority is derived from Membership, not a client organization ID, and tenant-owned access remains protected by transaction-local PostgreSQL RLS.

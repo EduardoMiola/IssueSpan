@@ -1,6 +1,16 @@
 # Authentication, authorization, and RBAC
 
-Status: **CURRENT baseline; planned implementation.**
+Status: **CURRENT authentication, opaque-session, TenantContext, and initial policy foundation implemented in IS-15. Advanced RBAC hardening remains PLANNED for IS-29.**
+
+## IS-15 implementation evidence
+
+`apps/api` provides `POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, and `GET /api/v1/me`. Passwords use Argon2id with OWASP's minimum 19 MiB / 2 iterations / parallelism 1; parameters are encoded in each hash and a successful login can rehash after policy changes. Authentication failures are generic.
+
+Sessions are 256-bit Node crypto tokens. PostgreSQL stores only their SHA-256 hash, idle and absolute expirations, revocation, last-seen, and auth method. Cookies are HttpOnly, SameSite=Lax, Path=/, no-Domain, `__Host-` in production, and Secure in production; local HTTP deliberately uses a differently named development cookie. Logout revokes server state before clearing cookies.
+
+HttpOnly does not solve XSS. Browser mutations require a non-authentication CSRF cookie paired with `X-CSRF-Token` plus exact configured Origin validation, which addresses CSRF. `resolveTenantContext` proves the authenticated user's Membership before returning `{ userId, organizationId, membershipId, role }`; `withTenantTransaction` carries that trusted context to transaction-local PostgreSQL RLS. The centralized capability foundation is CURRENT; full RBAC hardening and durable audit storage are **DEFERRED** to IS-29 and IS-32.
+
+The first API boundary also applies an in-process, IP-plus-email, five-attempt/15-minute login rate limit. It is deliberately non-authoritative and process-local; distributed Valkey enforcement is **DEFERRED** until deployment topology and measured abuse require it.
 
 Authentication proves who the user is. Tenant resolution identifies the Organization from the server-side session and membership. Authorization checks whether that principal can perform the operation on that resource. These are separate steps and must remain separate in code and tests.
 

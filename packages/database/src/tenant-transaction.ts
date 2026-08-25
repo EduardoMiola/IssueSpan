@@ -1,6 +1,14 @@
 import type { PrismaClient } from "./generated/client/client.js";
 
-export type TenantContext = { organizationId: string };
+export type TenantRole = "OWNER" | "ADMIN" | "AGENT";
+
+/** Server-derived after authenticating a User and proving a Membership. */
+export type TenantContext = {
+  organizationId: string;
+  userId: string;
+  membershipId: string;
+  role: TenantRole;
+};
 
 export async function withTenantTransaction<T>(
   client: PrismaClient,

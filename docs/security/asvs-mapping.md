@@ -32,3 +32,11 @@ Each implementation PR should update the relevant row with a code path, test nam
 ## High-risk focus
 
 The first evidence priority is cross-tenant access, session/CSRF/XSS, attachment and SSRF handling, provider webhook forgery/replay, Zapo credential protection, queue payload secrecy, deployment identity, and audit redaction. Any discovered vulnerability becomes a regression fixture and is linked to the security advisory process.
+# IS-15 evidence
+
+Status: **CURRENT evidence only for the controls below; unlisted controls remain PLANNED.**
+
+- Password storage: `packages/identity/src/index.ts` uses Argon2id; tests reject an incorrect password.
+- Session protection: `apps/api/src/app.ts` hashes opaque tokens before persistence and revokes them on logout.
+- Tenant authorization: Membership produces TenantContext and `withTenantTransaction` applies it to RLS.
+- CSRF: API mutations require exact Origin and the double-submit CSRF value.

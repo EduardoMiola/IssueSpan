@@ -1,0 +1,9 @@
+{
+  "name": "@issuespan/identity",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc --noEmit", "test": "vitest run" },
+  "dependencies": { "@issuespan/database": "workspace:*", "argon2": "^0.44.0" },
+  "devDependencies": { "@types/node": "^24.0.0", "typescript": "^5.9.2", "vitest": "^3.2.4" }
+}
