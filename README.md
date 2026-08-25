@@ -9,3 +9,13 @@ The current architecture is a planned modular monolith with Ports & Adapters, te
 Start with the [product vision](docs/product/vision-and-scope.md), [Architecture Definition v1](docs/architecture/architecture-definition-v1.md), [architecture diagrams](docs/architecture/diagrams.md), [roadmap](docs/product/roadmap.md), [documentation map](docs/README.md), [ASVS mapping](docs/security/asvs-mapping.md), and [ADR index](docs/adr/README.md). Delivery sequencing lives in Jira, beginning with [IS-13](https://issuespan.atlassian.net/browse/IS-13).
 
 Status: **early development**. No fabricated badges, uptime claims, benchmark numbers, or production-readiness claims are presented here.
+
+## Local infrastructure
+
+```bash
+cp .env.example .env
+pnpm infra:up
+pnpm infra:ps
+```
+
+Read the [Docker and local development guide](docs/deployment/docker-and-local-development.md) for the developer workflow and troubleshooting.

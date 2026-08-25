@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+.docker/
+docker-data/
+node_modules/
+graphify-out/
