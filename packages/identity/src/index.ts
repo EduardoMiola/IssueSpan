@@ -1,0 +1,51 @@
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import argon2 from "argon2";
+import type { PrismaClient } from "@issuespan/database";
+import type { TenantContext, TenantRole } from "@issuespan/database";
+
+export const passwordPolicy = { type: argon2.argon2id, memoryCost: 19 * 1024, timeCost: 2, parallelism: 1 } as const;
+export const permissions = ["organization:manage", "member:manage", "customer:read", "conversation:read", "conversation:reply", "channel:manage", "escalation:manage", "audit:read"] as const;
+export type Permission = (typeof permissions)[number];
+
+const rolePermissions: Record<TenantRole, readonly Permission[]> = {
+  OWNER: permissions,
+  ADMIN: ["member:manage", "customer:read", "conversation:read", "conversation:reply", "channel:manage", "escalation:manage", "audit:read"],
+  AGENT: ["customer:read", "conversation:read", "conversation:reply"],
+};
+
+export class AuthenticationError extends Error { public readonly code = "AUTHENTICATION_REQUIRED"; }
+export class AuthorizationError extends Error { public readonly code = "FORBIDDEN"; }
+export type Clock = () => Date;
+export type SecurityEvent = { type: "login_succeeded" | "login_failed" | "logout" | "session_rejected" | "tenant_access_denied"; userId?: string; organizationId?: string };
+export type SecurityEventSink = (event: SecurityEvent) => void | Promise<void>;
+
+export function hashSessionToken(token: string): string { return createHash("sha256").update(token).digest("base64url"); }
+export function createSessionToken(): string { return randomBytes(32).toString("base64url"); }
+export async function hashPassword(password: string): Promise<string> { return argon2.hash(password, passwordPolicy); }
+export async function verifyPassword(hash: string, password: string): Promise<boolean> { try { return await argon2.verify(hash, password); } catch { return false; } }
+export function needsPasswordRehash(hash: string): boolean { return argon2.needsRehash(hash, { memoryCost: passwordPolicy.memoryCost, timeCost: passwordPolicy.timeCost, parallelism: passwordPolicy.parallelism }); }
+
+export class Authorization {
+  require(context: TenantContext | undefined, permission: Permission): void {
+    if (!context || !rolePermissions[context.role]?.includes(permission)) throw new AuthorizationError("Permission denied");
+  }
+}
+
+export async function resolveTenantContext(client: PrismaClient, userId: string, organizationId: string): Promise<TenantContext> {
+  const membership = await client.membership.findUnique({ where: { organizationId_userId: { organizationId, userId } } });
+  if (!membership || !["OWNER", "ADMIN", "AGENT"].includes(membership.role)) throw new AuthorizationError("Organization access denied");
+  return { userId, organizationId, membershipId: membership.id, role: membership.role as TenantRole };
+}
+
+export type SessionPrincipal = { sessionId: string; userId: string };
+export async function authenticateSession(client: PrismaClient, rawToken: string | undefined, now: Date): Promise<SessionPrincipal> {
+  if (!rawToken) throw new AuthenticationError("Authentication required");
+  const session = await client.session.findUnique({ where: { tokenHash: hashSessionToken(rawToken) }, include: { user: true } });
+  if (!session || session.revokedAt || !session.user.isActive || session.idleExpiresAt <= now || session.absoluteExpiresAt <= now) throw new AuthenticationError("Authentication required");
+  return { sessionId: session.id, userId: session.userId };
+}
+
+export async function verifyOpaqueToken(expected: string, received: string): Promise<boolean> {
+  const a = Buffer.from(expected); const b = Buffer.from(received);
+  return a.length === b.length && timingSafeEqual(a, b);
+}

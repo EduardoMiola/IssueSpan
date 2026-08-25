@@ -77,3 +77,8 @@ PR lanes: install with frozen lockfile, lint, typecheck, unit, integration, tena
 Coverage is a signal. A provisional lesson target is 80% line/function/statement and 75% branch, with higher branch attention in authorization and tenant code; the repository may refine numbers after a baseline. Risk coverage overrides raw percentages. A flaky test is a defect. Quarantine requires an issue, owner, deadline, and explicit exclusion; critical security, tenant, migration, and persistence tests are never silently skipped.
 
 Definition of Done includes changed-behavior tests, tenant/security review, failure semantics, docs/ADR updates when decisions change, observability fields, migration compatibility, and a clean diff. The concise explanation is: “Mocks prove local decisions; real infrastructure proves the boundaries where IssueSpan can lose data, cross a tenant, duplicate a provider effect, or split ownership.”
+# IS-15 authentication coverage
+
+Status: **CURRENT unit evidence; broader API integration coverage remains PLANNED.**
+
+`packages/identity/src/index.test.ts` covers Argon2id verification, wrong-password rejection, encoded-policy rehash detection, 256-bit opaque token generation, token hashing, and fail-closed capability authorization. The existing real-PostgreSQL database suite remains evidence for RLS and transaction-local isolation. Future API integration tests must cover cookies, expiry/revocation, CSRF/Origin rejection, and secret leakage.

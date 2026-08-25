@@ -10,7 +10,10 @@ datasource db {
 model User {
   id          String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
   email       String       @unique
+  // Nullable only for the IS-14 bootstrap rows; password login fails closed without it.
+  passwordHash String?
   displayName String?
+  isActive    Boolean      @default(true)
   createdAt   DateTime     @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
   memberships Membership[]
@@ -48,15 +51,17 @@ model Membership {
 }
 
 model Session {
-  id        String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  userId    String    @db.Uuid
-  tokenHash String    @unique
-  expiresAt DateTime  @db.Timestamptz(6)
-  revokedAt DateTime? @db.Timestamptz(6)
-  lastSeenAt DateTime? @db.Timestamptz(6)
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId, expiresAt])
+  id                String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId            String    @db.Uuid
+  tokenHash         String    @unique
+  idleExpiresAt     DateTime  @db.Timestamptz(6)
+  absoluteExpiresAt DateTime  @db.Timestamptz(6)
+  revokedAt         DateTime? @db.Timestamptz(6)
+  lastSeenAt        DateTime  @default(now()) @db.Timestamptz(6)
+  authMethod        String    @default("PASSWORD")
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, absoluteExpiresAt])
   @@map("sessions")
 }
 
