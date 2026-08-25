@@ -1,78 +1,13 @@
 # IssueSpan Architecture Definition v1
 
-**Status:** Frozen baseline  
-**Owner:** Eduardo Miola  
-**Scope:** Repository and product architecture
+Status: **FROZEN planning baseline for PR #1.** This document defines direction, not implemented runtime behavior.
 
-## 1. Core decisions
+IssueSpan is a modular monolith using Ports & Adapters, one shared Postgres database with tenant-aware ownership and RLS defense in depth, and separate runtime processes: `web`, `api`, `worker`, and `channel-worker`. The baseline technology is TypeScript, React/Vite, PostgreSQL, Valkey/BullMQ, object storage, OpenTelemetry/Pino, Docker/OCI, AWS ECS, OpenTofu, and GitHub Actions.
 
-IssueSpan is a modular monolith with explicit bounded contexts and Ports & Adapters at integration boundaries. It is deployed as separate runtime processes where lifecycle or scaling characteristics differ:
+Bounded contexts are Identity & Access, Workspace, Customer Context, Conversation, Messaging, Escalations, and Audit. Organizations are tenants. TenantContext is server-derived. Business state and event intent commit together; asynchronous delivery is at-least-once and idempotent. Zapo/WhatsApp is v0.1's flagship channel behind MessagingChannel. Email is v1 through a managed provider, Postmark first. Provider-native engineering facts stay with GitHub/Linear/Jira; IssueSpan owns customer impact.
 
-```text
-web             React SPA
-api             synchronous HTTP and SSE boundary
-worker          transactional outbox and asynchronous jobs
-channel-worker  long-lived Zapo/WhatsApp connection ownership
-```
+Invariants: no cross-tenant read/write; no direct provider SDK leakage into domain; no external side effect inside the request transaction; no claim of exactly-once external delivery; no automatic Conversation resolution from engineering status; one active owner per Zapo session; secrets and customer content are not logged by default; migrations support overlapping versions.
 
-The initial implementation remains one repository and one domain model. Process separation is operational; it does not turn the internal modules into distributed services.
+Deployment direction is ECS with API/general workers on Fargate and stateful channel-worker capacity on ECS/EC2 as justified, RDS Postgres Multi-AZ, ElastiCache/Valkey, S3, Secrets Manager, and immutable GitHub Actions-built images promoted by digest.
 
-## 2. Technology baseline
-
-| Concern | Decision |
-|---|---|
-| Frontend | React 19.2, Vite, React Router, TanStack Query |
-| Backend | Node.js 24, TypeScript, Fastify 5 |
-| Database | PostgreSQL 18, Prisma 7 |
-| Queue/cache | BullMQ with Redis-compatible Valkey |
-| Files | S3-compatible object storage |
-| Authentication | Server-side sessions, secure HttpOnly cookies |
-| Authorization | Membership-scoped capability RBAC |
-| Realtime | Server-Sent Events |
-| Testing | Vitest, Testcontainers, Zapo fake server, Playwright |
-| Observability | OpenTelemetry, Pino, Collector, SigNoz reference stack |
-| Deployment | OCI containers on AWS ECS; OpenTofu; GitHub Actions |
-
-## 3. Bounded contexts
-
-```text
-Identity & Organizations
-Customers & Contacts
-Conversations & Messages
-Messaging Channels
-Escalations & Customer Impact
-Engineering Integrations
-Audit & Operations
-```
-
-Modules communicate through application commands, domain events, and explicit ports. A module must not reach into another module's persistence internals through arbitrary imports or direct queries.
-
-## 4. Tenant isolation
-
-The database uses shared tables with `organization_id`, tenant-aware foreign keys, and PostgreSQL RLS as defense in depth. Tenant context comes from the authenticated membership, never from a client-provided organization ID alone.
-
-The same rule applies to cache keys, object-storage paths, queue payloads, repository methods, audit records, and tests. Cross-tenant negative tests are mandatory for protected resources.
-
-## 5. Reliability model
-
-Business state and the intention to publish an event are committed in one transaction through a transactional outbox. Relays and consumers are at-least-once. Every consumer and externally side-effecting command must define an idempotency key and a retry policy.
-
-The system does not claim exactly-once delivery across an external provider boundary unless that provider supplies an idempotent operation contract.
-
-## 6. Provider boundaries
-
-```text
-MessagingChannel
-  └── ZapoWhatsAppAdapter
-
-EmailChannel
-  └── EmailProvider
-        └── PostmarkAdapter (v1 first provider)
-
-EngineeringIssueProvider
-  ├── GitHubAdapter
-  ├── JiraAdapter
-  └── LinearAdapter
-```
-
-IssueSpan owns `EngineeringIssue`, `Escalation`, Conversation, CustomerAccount, and customer-impact relationships. External systems own provider-native issue identifiers, statuses, labels, and comments; IssueSpan stores projections of those facts.
+Deep documents: [fundamentals](01-fundamentals-and-system-shape.md), [DDD](02-domain-ddd-and-module-boundaries.md), [data](03-data-tenancy-and-postgresql.md), [auth](04-authentication-authorization-rbac.md), [messaging](05-messaging-event-driven-reliability.md), [Zapo](06-zapo-channel-workers-and-session-ownership.md), [operations](07-api-contracts-observability-and-operations.md), [engineering](08-engineering-integrations-and-customer-impact.md), [Email](09-email-channel-architecture.md), and [frontend](10-frontend-and-product-ux.md).

@@ -1,18 +1,18 @@
 # IssueSpan documentation
 
-This directory is the product and engineering baseline, including decisions from Parts 1–15 of the planning class. Jira project [IS](https://issuespan.atlassian.net/browse/IS) tracks delivery; GitHub tracks code and review. These documents do not claim runtime implementation.
+## Source of truth
 
-| Area | Purpose |
-|---|---|
-| [`architecture/`](architecture/architecture-definition-v1.md) | Frozen technical decisions and boundaries |
-| [`product/`](product/roadmap.md) | Product scope and release sequencing |
-| [`execution/`](execution/backlog.md) | Jira-aligned delivery order and definition of done |
+GitHub documentation is the source of truth for architecture, product scope, security, operations, and implementation guidance. Jira is the delivery system of record: issue ownership, sequencing, acceptance criteria, dependencies, and progress live there. ADRs are the decision history: they record why a choice was made, what alternatives were rejected, and when it may be revisited.
 
-The documents describe the intended system. Jira tracks execution, and GitHub tracks code review and changes.
+When sources disagree, do not silently edit the prose. Open or update the Jira issue, record the decision in an ADR, then update the affected deep document and executive definition. README is the public orientation, not the detailed architecture source.
 
-## Index
+## Map
 
-- [Architecture](architecture/architecture-definition-v1.md), [domain/data](architecture/domain-data-architecture.md), [messaging/integrations](architecture/messaging-channels-integrations.md), [API/frontend](architecture/api-frontend.md), [channel workers](architecture/channel-workers.md)
-- [Product definition](product/product-definition-v1.md) and [roadmap](product/roadmap.md)
-- [Threat model](security/threat-model.md), [testing](testing/testing-strategy.md), [deployment](operations/deployment-and-cicd.md), [observability](operations/observability-performance.md)
-- [ADR index](adr/README.md) and [execution backlog](execution/backlog.md)
+- [Product vision and scope](product/vision-and-scope.md) and [roadmap](product/roadmap.md)
+- [Architecture Definition v1](architecture/architecture-definition-v1.md) and [deep architecture](architecture/01-fundamentals-and-system-shape.md)
+- [Security threat model](security/threat-model.md) and [controls](security/security-controls.md)
+- [Testing strategy](testing/testing-strategy.md)
+- [Docker/local](deployment/docker-and-local-development.md), [AWS/CI](deployment/aws-and-cicd.md), [capacity](performance/capacity-and-scale.md)
+- [Runbooks](operations/runbook-index.md), [execution backlog](execution/backlog.md), and [ADRs](adr/README.md)
+
+Labels CURRENT, PLANNED, DEFERRED, and PROPOSED describe maturity. Documentation must never imply that a planned component is implemented.

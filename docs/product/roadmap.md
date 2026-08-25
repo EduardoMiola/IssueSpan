@@ -1,23 +1,13 @@
-# IssueSpan product roadmap
+# Roadmap
 
-## Release targets
+Status: **PLANNED; sequence is directional and Jira is authoritative for delivery.**
 
-### v0.1 Alpha — prove the vertical architecture
+1. Repository foundation: documentation, ADRs, CI conventions, local stack, and OSS governance.
+2. Walking skeleton: tenancy/RLS, sessions, domain modules, Conversation/Message, API, outbox, worker, React shell, SSE, and golden path.
+3. Zapo hardening: channel-worker ownership, leases/fencing, reconnect control, diagnostics, and fake-provider E2E.
+4. Engineering workflow: GitHub full, Customer Impact projection, then Linear and Jira capability-based adapters.
+5. v1 Email: Postmark inbound/outbound, threading, attachments, delivery/suppression, and operational runbooks.
+6. Production hardening: AWS ECS/OpenTofu, backups/restore, security gates, performance profiles, release automation, and self-host update documentation.
+7. Later scale: partitioned workers, cells, read replicas, dedicated databases, multi-region, and additional channels only where evidence supports them.
 
-Deliver a usable support workflow with WhatsApp/Zapo, inbox and conversations, customer accounts, escalation to an internal engineering issue, GitHub integration, tenant isolation, RBAC, outbox/workers, observability, and production-grade tests.
-
-### v1.0 — portfolio-grade public release
-
-Add Email through Postmark, GitHub/Jira/Linear integration capabilities, connection and operations dashboards, self-hosting documentation, security hardening, load testing, and CI/CD promotion.
-
-## Explicitly deferred
-
-- Generic SMTP as the first email implementation.
-- A graph database; PostgreSQL relationships and read models are sufficient initially.
-- A microservice split before operational evidence requires it.
-- A provider-specific domain model.
-- Public customer data, credentials, or production integrations in the repository.
-
-## Guardrails
-
-Do not add microservices, a graph database, generic SMTP first, or provider-specific domain models merely to make the project look larger. Complexity follows measured requirements and ADRs.
+Deferred: microservices by default, a graph database, self-hosted MTA, WebSockets before SSE limitations appear, multi-region active/active, custom RBAC UI before capability policy is stable, and invented benchmark promises.
