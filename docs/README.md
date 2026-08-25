@@ -9,10 +9,12 @@ When sources disagree, do not silently edit the prose. Open or update the Jira i
 ## Map
 
 - [Product vision and scope](product/vision-and-scope.md) and [roadmap](product/roadmap.md)
-- [Architecture Definition v1](architecture/architecture-definition-v1.md) and [deep architecture](architecture/01-fundamentals-and-system-shape.md)
-- [Security threat model](security/threat-model.md) and [controls](security/security-controls.md)
+- [Architecture Definition v1](architecture/architecture-definition-v1.md), [diagrams](architecture/diagrams.md), and [deep architecture](architecture/01-fundamentals-and-system-shape.md)
+- [Security threat model](security/threat-model.md), [controls](security/security-controls.md), and [ASVS mapping](security/asvs-mapping.md)
 - [Testing strategy](testing/testing-strategy.md)
 - [Docker/local](deployment/docker-and-local-development.md), [AWS/CI](deployment/aws-and-cicd.md), [capacity](performance/capacity-and-scale.md)
-- [Runbooks](operations/runbook-index.md), [execution backlog](execution/backlog.md), and [ADRs](adr/README.md)
+- [Runbook index](operations/runbook-index.md), [execution backlog](execution/backlog.md), and [ADRs](adr/README.md)
+
+The numbered architecture documents are intentionally implementation-grade. The executive definition remains concise; details, diagrams, failure modes, trade-offs, tests, and revisit triggers belong in the deep documents.
 
 Labels CURRENT, PLANNED, DEFERRED, and PROPOSED describe maturity. Documentation must never imply that a planned component is implemented.

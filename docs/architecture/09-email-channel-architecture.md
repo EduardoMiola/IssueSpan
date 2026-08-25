@@ -13,3 +13,11 @@ Store `Message-ID`, `In-Reply-To`, and `References`. Reply parsing is best effor
 CC and participants have explicit semantics and privacy rules. Provider states distinguish accepted, delivered, bounced, and complained. Without open tracking, READ is not inferred; the default is not-read/unknown. If the provider accepts a message and the process dies before updating Postgres, the result is ambiguous and reconciliation/idempotency handles it. Recipient suppression and bounce health are first-class operational concerns.
 
 SPF, DKIM, and DMARC are deliverability controls. They are not application-user authentication or authorization.
+
+## Threading and privacy detail
+
+Outbound mail gets an IssueSpan-owned RFC Message-ID before the provider call and an opaque random Reply-To route token. Store only a token hash in `email_reply_routes` with Organization, ChannelConnection, and Conversation. The token routes a reply but does not authenticate the sender because forwarding can leak it.
+
+Resolve inbound threading by route token, `In-Reply-To`, `References`, trustworthy provider metadata, then conservative participant/subject/time heuristics. Never use subject alone; ambiguous mail starts a new Conversation because a false split is safer than cross-customer disclosure. Keep provider Message ID separate from RFC Internet Message-ID, preserve original addresses, and model To/Cc/Reply-All participants explicitly.
+
+Email delivery semantics differ from WhatsApp: provider acceptance is SENT, receiving mail-system acceptance is DELIVERED, and OPENED is not READ. Permanent bounce or complaint can suppress a recipient. Mail loops and auto-replies need classification and rate limits.

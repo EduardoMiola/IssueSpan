@@ -1,11 +1,12 @@
 # Runbook index
 
-Status: **SKELETON; each runbook becomes a release artifact before production.**
+Status: **CURRENT index; detailed procedures are planned release artifacts.**
 
-- Channel reconnect outage: identify affected connections, lease owners, provider errors, storm controls, drain/handoff, and customer communication.
-- Outbox backlog: inspect age/volume, relay leases, terminal errors, tenant fairness, and safe replay.
-- Queue failure: inspect BullMQ/Valkey health, retry class, dead letters, and worker rollout.
-- Postgres connection exhaustion: identify pool budgets, blocked queries, replicas, and emergency load shedding.
-- Provider rate limit/token revoked: isolate the provider/tenant, rotate or reauthorize safely, and reconcile.
-- Bad deploy rollback: pin prior digest, protect migrations, verify health, and record forward-fix needs.
-- Restore exercise: restore to an isolated target, verify RLS/tenant counts and application reads, and document RTO/RPO evidence.
+Runbooks use the same shape: symptom, impact, safety checks, diagnosis, mitigation, recovery, escalation, and prevention. Never paste credentials, transcript content, or raw provider payloads into an incident channel.
+
+- [Channel reconnect storm](channel-reconnect-storm.md)
+- [Outbox and queue backlog](outbox-queue-backlog.md)
+- [PostgreSQL exhaustion](postgres-exhaustion.md)
+- [Provider credentials and rate limits](provider-credential-rate-limit.md)
+- [Bad deployment rollback](bad-deployment-rollback.md)
+- [Restore exercise](restore-exercise.md)

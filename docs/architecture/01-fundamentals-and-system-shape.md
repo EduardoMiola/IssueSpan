@@ -58,3 +58,11 @@ For read-heavy traffic, use cached/read models, bounded payloads, keyset paginat
 ## Evolution rule
 
 Measure first. Extract a worker or module when a concrete bottleneck or blast-radius problem is reproducible. Keep contracts versioned, tenant-aware, observable, and idempotent before moving a boundary across the network.
+
+## Pattern guide and scale conversation
+
+Modular Monolith is a deployment style; Ports & Adapters controls dependency direction; Adapter, Strategy, and Factory vary providers; Repository and Unit of Work isolate persistence; Outbox, idempotency, retry/backoff/jitter, circuit breaker, and bulkhead address distributed failure; leases and fencing address ownership; selective CQRS addresses relationship-heavy reads. Do not add a pattern without the failure mode it solves. In particular, do not add CQRS everywhere, a circuit breaker around local code, or distributed leases before the one-worker Zapo runtime is correct.
+
+“One million RPS” is not a requirement until the workload is named: read/write mix, payload, consistency, latency, region, burst, tenant skew, availability, and cost. Sustained 1M RPS is 86.4 billion requests/day; at roughly 1 KB it is roughly 86 TB/day raw ingress before response, replication, and telemetry. Read-heavy traffic may use caches/CDNs; durable writes need partitioned ingestion/storage, backpressure, load shedding, and tenant fairness.
+
+`apps/web`, `apps/api`, `apps/worker`, and `apps/channel-worker` are composition roots. Domain packages do not import Fastify, Prisma, Redis/BullMQ, Zapo, React, or AWS SDK types. This keeps future extraction possible without pretending that v0.1 is already microservices.

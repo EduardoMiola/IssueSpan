@@ -13,3 +13,11 @@ Map provider statuses into canonical states with `UNKNOWN` fallback and preserve
 Do not send transcripts, ARR, contacts, or customer dumps to a provider by default. An internal note is not a provider comment. Comments require an explicit user action, a policy check, redaction, and an audit record.
 
 The Customer Impact read model links Customer Accounts, Conversations, EngineeringIssues, and external status facts. A graph database is deferred: Postgres projections, indexes, and bounded traversals provide simpler transactions and operations first. Per-provider rate limits, bulkheads, circuit breakers, and backoff isolate provider failure.
+
+## Ownership and asynchronous creation
+
+IssueSpan owns CustomerAccount, Contact, Conversation, Escalation, customer impact, and follow-up. Providers own external IDs, workflow status, assignees, projects, labels, comments, and provider timestamps. `EngineeringIssue` is the local identity; `ExternalIssueLink` stores provider snapshots and sync state. An EngineeringIssue may exist before a provider ticket and may have multiple links.
+
+Creation is a transaction plus outbox: local EngineeringIssue and `PENDING_CREATE` link commit first, then an adapter creates the external issue. Success becomes `LINKED`; bounded failure becomes `SYNC_ERROR` while local impact survives. Never auto-copy private transcripts, ARR, or raw customer email. InternalNote is not ProviderComment; comments require explicit action, redaction, permission, and audit.
+
+Webhook flow is verify raw signature → resolve trusted IntegrationConnection → dedupe delivery ID → persist inbox → fast 2xx → async normalize/snapshot/impact. Webhooks are duplicate and out-of-order; provider timestamps and targeted reconciliation prevent stale updates. Canonical status `UNKNOWN` is safer than a false mapping. Provider RESOLVED never auto-resolves support Conversations.

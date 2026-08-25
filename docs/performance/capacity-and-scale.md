@@ -9,3 +9,11 @@ Budget Postgres connections across every replica and worker. Observe query laten
 k6 profiles: steady state, spike, soak, and breakpoint. Zapo benchmarks vary memory/session, message rate, media, reconnect frequency, file descriptors, cache size, event-loop lag, and GC pauses. Autoscaling signals include queue age, lease utilization, event-loop lag, connection health, and saturation—not CPU alone.
 
 Evolution is measured partitioning, cells, read replicas, dedicated databases, and multi-region. Each step needs a failure-domain argument, data movement plan, observability, and rollback story.
+
+## Workload and evidence detail
+
+Benchmark API reads/writes, PostgreSQL transactions, BullMQ, SSE fanout, Zapo idle/light/busy/reconnecting sessions, Email with and without attachments, webhooks, integrations, and object storage independently. Separate messaging latency into browser→durable Message, queue→worker, worker→provider ACK, ACK→receipt, and inbound provider→agent UI. Provisional targets are hypotheses until measured.
+
+Use k6 arrival-rate tests, realistic tenant skew, and representative data. Report p50/p90/p95/p99, errors, queue age, saturation, pool wait, locks, IOPS, RSS, event-loop delay, sockets, reconnects, and GC. A channel worker's safe capacity is the first bottleneck with headroom, not sessions-per-worker claimed from intuition. Test a noisy tenant consuming most traffic while smaller Organizations retain targets.
+
+Optimize unnecessary work, query/algorithm, indexes, payload, batching, evidence-based cache, then scale. Kafka, sharding, and multi-region are revisit decisions after measured vertical/index/read-replica/partitioning limits.

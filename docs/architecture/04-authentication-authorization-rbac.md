@@ -19,3 +19,18 @@ The initial roles are `OWNER`, `ADMIN`, and `AGENT`, but handlers check capabili
 An Organization must always retain at least one active owner. Transfer and deletion are transactions that enforce the last-owner invariant. Membership changes, invitation acceptance, resets, session revocations, and role changes emit audit records.
 
 Machine/API tokens, OAuth/OIDC, MFA, and passkeys are later capabilities. Their addition must preserve TenantContext derivation, scoped permissions, rotation, revocation, and auditability.
+
+## Session and token lifecycle
+
+```text
+login → Argon2id verification → hash opaque session token
+  → Secure HttpOnly cookie → authenticate User
+  → resolve Organization membership/capabilities
+  → idle/absolute expiry → revoke or rotate
+```
+
+Store a SHA-256 hash of a 256-bit random token, never the raw token. Use `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`, no `Domain`, and `__Host-` where possible. HttpOnly does not solve XSS; mutations still need CSRF tokens/custom headers plus Origin verification. Generic login/reset responses prevent enumeration. Rate limiting combines IP and account signals without permanent lockout.
+
+Invitations and password resets use one-use high-entropy hashed tokens with expiry, revocation, and atomic consume. Invitation role grants require capability. Reset and role changes revoke or rotate sessions and emit safe AuditEvents. Provider credentials and Zapo keys never enter browser responses.
+
+Use `authorization.require(ctx, Permission.X)` over role-name branches. OWNER/ADMIN/AGENT are defaults; capabilities cover members, channels, CustomerAccounts, Conversations, InternalNotes, Escalations, audit, and webhooks. Last-owner removal and Admin self-promotion are business-invariant tests.

@@ -11,3 +11,9 @@ SSE carries authorized invalidation events. TanStack Query refetches the authori
 Customer context should make account identity, recent conversations, linked escalations, and impact visible without dumping sensitive data. Connection diagnostics explain the last known state, freshness, incident, and safe next action. A platform operator view is a separate permission boundary.
 
 Target WCAG 2.2 AA: keyboard navigation, focus management, semantic labels, contrast, reduced motion, screen-reader status updates, and accessible error summaries are part of Definition of Done.
+
+## State ownership and realtime
+
+TanStack Query owns server state; URL owns filters and navigation; React Hook Form plus Zod owns forms; React state owns local UI. Theme, selected workspace, and nav collapse may use Context/localStorage because they are preferences, never secrets. Do not add Redux/Zustand without a concrete cross-cutting state need. The browser stores no bearer token; the API owns the HttpOnly session.
+
+One workspace SSE connection carries small identity signals. A central router coalesces storms, invalidates relevant queries, and refetches after reconnect. REST remains truth. Do not retry 401/403/404/422 automatically, and do not claim external send success from optimistic state. Email HTML is sanitized and isolated. Provider resolution produces a follow-up-needed view; it does not auto-close Conversations.
