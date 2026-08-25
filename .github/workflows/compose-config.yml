@@ -1,0 +1,22 @@
+name: Compose configuration
+
+on:
+  pull_request:
+    paths:
+      - compose.yaml
+      - .env.example
+      - .github/workflows/compose-config.yml
+  push:
+    branches: [main]
+    paths:
+      - compose.yaml
+      - .env.example
+      - .github/workflows/compose-config.yml
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: docker compose config

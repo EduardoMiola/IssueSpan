@@ -1,0 +1,12 @@
+{
+  "name": "issuespan",
+  "private": true,
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:logs": "docker compose logs -f",
+    "infra:ps": "docker compose ps",
+    "infra:reset": "docker compose down -v"
+  }
+}
