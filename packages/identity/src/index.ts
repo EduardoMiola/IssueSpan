@@ -37,12 +37,18 @@ export async function resolveTenantContext(client: PrismaClient, userId: string,
   return { userId, organizationId, membershipId: membership.id, role: membership.role as TenantRole };
 }
 
-export type SessionPrincipal = { sessionId: string; userId: string };
-export async function authenticateSession(client: PrismaClient, rawToken: string | undefined, now: Date): Promise<SessionPrincipal> {
+export type SessionPrincipal = { sessionId: string; userId: string; idleExpiresAt: Date; absoluteExpiresAt: Date };
+export async function authenticateSession(client: PrismaClient, rawToken: string | undefined, now: Date, refresh = true): Promise<SessionPrincipal> {
   if (!rawToken) throw new AuthenticationError("Authentication required");
   const session = await client.session.findUnique({ where: { tokenHash: hashSessionToken(rawToken) }, include: { user: true } });
   if (!session || session.revokedAt || !session.user.isActive || session.idleExpiresAt <= now || session.absoluteExpiresAt <= now) throw new AuthenticationError("Authentication required");
-  return { sessionId: session.id, userId: session.userId };
+  let idleExpiresAt = session.idleExpiresAt;
+  // Bound writes while ensuring an active browser session cannot outlive its absolute expiry.
+  if (refresh && session.lastSeenAt.getTime() + 5 * 60_000 <= now.getTime()) {
+    idleExpiresAt = new Date(Math.min(session.absoluteExpiresAt.getTime(), now.getTime() + 8 * 60 * 60_000));
+    await client.session.update({ where: { id: session.id }, data: { lastSeenAt: now, idleExpiresAt } });
+  }
+  return { sessionId: session.id, userId: session.userId, idleExpiresAt, absoluteExpiresAt: session.absoluteExpiresAt };
 }
 
 export async function verifyOpaqueToken(expected: string, received: string): Promise<boolean> {

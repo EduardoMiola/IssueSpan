@@ -79,6 +79,6 @@ Coverage is a signal. A provisional lesson target is 80% line/function/statement
 Definition of Done includes changed-behavior tests, tenant/security review, failure semantics, docs/ADR updates when decisions change, observability fields, migration compatibility, and a clean diff. The concise explanation is: “Mocks prove local decisions; real infrastructure proves the boundaries where IssueSpan can lose data, cross a tenant, duplicate a provider effect, or split ownership.”
 # IS-15 authentication coverage
 
-Status: **CURRENT unit evidence; broader API integration coverage remains PLANNED.**
+Status: **CURRENT unit/API evidence; broader integration coverage remains PLANNED.**
 
-`packages/identity/src/index.test.ts` covers Argon2id verification, wrong-password rejection, encoded-policy rehash detection, 256-bit opaque token generation, token hashing, and fail-closed capability authorization. The existing real-PostgreSQL database suite remains evidence for RLS and transaction-local isolation. Future API integration tests must cover cookies, expiry/revocation, CSRF/Origin rejection, and secret leakage.
+`packages/identity/src/index.test.ts` covers Argon2id verification, wrong-password rejection, encoded-policy rehash detection, 256-bit opaque token generation, token hashing, and fail-closed capability authorization. `apps/api/src/app.test.ts` is CURRENT evidence for HttpOnly cookies, missing-CSRF rejection, and server-side revocation with a valid Origin. The existing real-PostgreSQL database suite remains evidence for RLS and transaction-local isolation. Expiry, wrong-Origin, and cross-tenant API integration coverage remain PLANNED.

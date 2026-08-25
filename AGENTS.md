@@ -2,6 +2,8 @@
 
 ## Jira and delivery workflow
 
+Status: **CURRENT.**
+
 Jira is IssueSpan's delivery record; GitHub is its code, review, and release record; ADRs and architecture documents are its technical-decision record.
 
 Before significant work, inspect GitHub and Jira, reconcile stale Jira status against merged or open PRs, identify an unblocked issue, and do not implement untracked work. During implementation, move the issue to **IN PROGRESS**, record branch/PR information, and move it to **IN REVIEW** when the PR opens. Search Jira before creating a follow-up; create one when an out-of-scope defect, required security/architecture/test work, conscious debt, or deferred milestone work has no existing issue. Link newly discovered blockers and dependencies.
