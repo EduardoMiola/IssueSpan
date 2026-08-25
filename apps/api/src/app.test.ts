@@ -14,6 +14,20 @@ function database() {
 }
 
 describe("authentication API", () => {
+  it("returns Problem Details 400 for malformed JSON", async () => {
+    const app = buildApp({ database: database(), trustedOrigins: ["http://localhost:5173"] });
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/login",
+      headers: { "content-type": "application/json" },
+      payload: '{"email":',
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({ status: 400, code: "INVALID_REQUEST" });
+    await app.close();
+  });
+
   it("sets HttpOnly opaque session cookie and never serializes its raw or hashed value", async () => {
     user.passwordHash = await hashPassword("correct-password"); const db = database(); const app = buildApp({ database: db, trustedOrigins: ["http://localhost:5173"] });
     const response = await app.inject({ method: "POST", url: "/api/v1/auth/login", payload: { email: user.email, password: "correct-password" } });
