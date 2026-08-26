@@ -7,7 +7,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:validate": "prisma validate",
-    "db:test": "vitest run --config vitest.config.ts"
+    "db:test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.0",
@@ -21,6 +23,6 @@
     "prisma": "^7.0.0",
     "tsx": "^4.20.3",
     "typescript": "^5.9.2",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.0"
   }
 }
