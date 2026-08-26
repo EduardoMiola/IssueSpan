@@ -1,23 +1,86 @@
 import type { PrismaClient } from "./generated/client/client.js";
 
-export type TenantRole = "OWNER" | "ADMIN" | "AGENT";
+type TransactionClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+type MembershipProof = { id: string; role: string };
 
-/** Server-derived after authenticating a User and proving a Membership. */
-export type TenantContext = {
-  organizationId: string;
-  userId: string;
+export type TenantRole = "OWNER" | "ADMIN" | "AGENT";
+export type TenantSelector = { organizationId: string; userId: string };
+
+/** Server-derived inside the transaction after Membership has been proven. */
+export type TenantContext = TenantSelector & {
   membershipId: string;
   role: TenantRole;
 };
 
+export class TenantAccessDeniedError extends Error {
+  public readonly code = "TENANT_ACCESS_DENIED";
+}
+
+/** Establishes RLS scope, proves Membership, and only then exposes the transaction. */
 export async function withTenantTransaction<T>(
   client: PrismaClient,
-  context: TenantContext | undefined,
-  callback: (transaction: Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0]) => Promise<T>,
+  selector: TenantSelector | undefined,
+  callback: (transaction: TransactionClient, context: TenantContext) => Promise<T>,
 ): Promise<T> {
-  if (!context?.organizationId) throw new Error("TenantContext is required");
+  if (!selector?.organizationId || !selector.userId) {
+    throw new TenantAccessDeniedError("Authenticated tenant selector is required");
+  }
+
   return client.$transaction(async (transaction) => {
-    await transaction.$executeRaw`SELECT set_config('app.organization_id', ${context.organizationId}, true)`;
+    await setTransactionContext(transaction, "app.organization_id", selector.organizationId);
+    await setTransactionContext(transaction, "app.user_id", selector.userId);
+
+    const membership = await lockMembership(transaction, selector);
+    if (!membership || !isTenantRole(membership.role)) {
+      throw new TenantAccessDeniedError("Organization access denied");
+    }
+
+    const context: TenantContext = {
+      ...selector,
+      membershipId: membership.id,
+      role: membership.role,
+    };
+    return callback(transaction, context);
+  }, { isolationLevel: "ReadCommitted" });
+}
+
+/** Keeps the authorization proof current until all tenant work commits or rolls back. */
+async function lockMembership(
+  transaction: TransactionClient,
+  selector: TenantSelector,
+): Promise<MembershipProof | undefined> {
+  const [membership] = await transaction.$queryRaw<MembershipProof[]>`
+    SELECT id, role
+    FROM memberships
+    WHERE organization_id = ${selector.organizationId}::uuid
+      AND user_id = ${selector.userId}::uuid
+    FOR SHARE
+  `;
+  return membership;
+}
+
+/** Gives an authenticated user visibility only to their own Membership rows. */
+export async function withUserTransaction<T>(
+  client: PrismaClient,
+  userId: string | undefined,
+  callback: (transaction: TransactionClient) => Promise<T>,
+): Promise<T> {
+  if (!userId) throw new TenantAccessDeniedError("Authenticated user is required");
+
+  return client.$transaction(async (transaction) => {
+    await setTransactionContext(transaction, "app.user_id", userId);
     return callback(transaction);
   }, { isolationLevel: "ReadCommitted" });
+}
+
+async function setTransactionContext(
+  transaction: TransactionClient,
+  setting: "app.organization_id" | "app.user_id",
+  value: string,
+): Promise<void> {
+  await transaction.$executeRaw`SELECT set_config(${setting}, ${value}, true)`;
+}
+
+function isTenantRole(role: string): role is TenantRole {
+  return role === "OWNER" || role === "ADMIN" || role === "AGENT";
 }

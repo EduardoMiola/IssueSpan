@@ -21,6 +21,9 @@ ADRs use a lightweight MADR format: title, status, context, decision, alternativ
 | [0013](0013-build-once-promote-digest.md) | Build once, promote digest | ACCEPTED |
 | [0014](0014-agpl-only-proposed.md) | AGPL-3.0-only proposed license | PROPOSED — legal review required |
 | [0015](0015-database-foundation-tenancy-implementation.md) | IS-14 database foundation and tenancy implementation | ACCEPTED |
+| [0016](0016-restricted-api-runtime-and-membership-proof.md) | Restricted API runtime and Membership proof | ACCEPTED |
+| [0017](0017-identity-ports-and-authentication-verification.md) | Identity ports and authentication verification | ACCEPTED |
+| [0018](0018-tooling-runtime-baseline.md) | Tooling and runtime baseline | ACCEPTED |
 
 ## Prior decision groups
 

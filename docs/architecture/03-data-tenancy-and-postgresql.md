@@ -1,6 +1,6 @@
 # Data, tenancy, and PostgreSQL
 
-Status: **CURRENT foundation implemented in IS-14; application integration remains PLANNED.**
+Status: **CURRENT database foundation and authenticated API integration; broader application services remain PLANNED.**
 
 This document defines the first persistence model for IssueSpan. Tenant isolation is a chain of independent controls, and every link must be testable.
 
@@ -14,11 +14,11 @@ Related ADR: [ADR-0003](../adr/0003-shared-postgres-tenancy-rls.md).
 
 ## IS-14 implementation evidence
 
-The first database slice is CURRENT in [`packages/database`](../../packages/database/): Prisma 7 uses the ESM client and PostgreSQL driver adapter; migration `0001_database_foundation` creates the initial entities, UUIDv7 defaults, composite tenant foreign keys, restricted `issuespan_app`, and deny-by-default RLS policies. `withTenantTransaction` requires an organization ID, sets `app.organization_id` with transaction-local scope, and uses READ COMMITTED.
+The database foundation is CURRENT in [`packages/database`](../../packages/database/): Prisma 7 uses the ESM client and PostgreSQL driver adapter; migrations create the initial entities, UUIDv7 defaults, composite tenant foreign keys, restricted `issuespan_app`, and deny-by-default RLS policies. Since IS-33, `withTenantTransaction` requires authenticated user and organization selectors, establishes transaction-local scope, proves Membership, and only then exposes the READ COMMITTED transaction and trusted TenantContext.
 
-The executable evidence is `packages/database/src/database.integration.test.ts`. It runs against real PostgreSQL 18 and verifies runtime-role attributes, missing-context failure, known foreign-ID isolation, composite-FK rejection, tenant-scoped membership uniqueness, context cleanup, UUIDv7, and atomic conversation/outbox persistence. Testcontainers remains PLANNED for isolated parallel workers; the current local/CI lane uses the PostgreSQL 18 Compose service from IS-16.
+The executable evidence is `packages/database/src/database.integration.test.ts`. It runs against real PostgreSQL 18 and verifies runtime-role attributes, missing-context failure, Membership proof, read-only user scope, known foreign-ID isolation, composite-FK rejection, tenant-scoped membership uniqueness, context cleanup, UUIDv7, and atomic conversation/outbox persistence. `apps/api/src/runtime.integration.test.ts` additionally exercises login, `/me`, valid TenantContext, and non-member denial through the restricted role. Testcontainers remains PLANNED for isolated parallel workers; the current local/CI lane uses PostgreSQL 18 from IS-16.
 
-Authentication, membership bootstrap, repository ports, application services, provider dedupe keys, and the outbox relay are PLANNED for later Jira slices. This migration deliberately creates only the outbox table and does not claim a queue relay is implemented.
+Authentication and RLS-safe Membership resolution are CURRENT. Repository ports, application services, provider dedupe keys, and the outbox relay remain PLANNED for later Jira slices. The foundation creates only the outbox table and does not claim a queue relay is implemented.
 
 ## Tenant context chain
 

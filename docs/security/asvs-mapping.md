@@ -7,22 +7,22 @@ IssueSpan uses OWASP ASVS 5.0 as the control vocabulary. The first release targe
 | ASVS area | IssueSpan control / evidence | Status |
 | --- | --- | --- |
 | V1 Architecture | threat model, trust-boundary diagram, ADRs, abuse cases | PLANNED |
-| V2 Authentication | Argon2id, opaque hashed sessions, idle/absolute expiry, rotation | PLANNED |
-| V3 Session management | Secure HttpOnly `__Host-` cookie, revoke/list sessions, fixation tests | PLANNED |
-| V4 Access control | `packages/database` TenantContext guard, composite FKs, RLS policies, runtime-role and negative isolation tests | CURRENT for IS-14 database evidence; application authorization PLANNED |
+| V2 Authentication | Argon2id, opaque hashed sessions, idle/absolute expiry, rotation | CURRENT for IS-15/IS-34 evidence; recovery/MFA PLANNED |
+| V3 Session management | Secure HttpOnly `__Host-` cookie, revoke/list sessions, fixation tests | CURRENT for IS-15/IS-34 session, expiry, CSRF, and revocation evidence; broader session administration PLANNED |
+| V4 Access control | `packages/database` TenantContext guard, composite FKs, RLS policies, runtime-role and negative isolation tests | CURRENT for IS-14 and IS-33 database/API evidence; broader authorization PLANNED |
 | V5 Validation | explicit Zod command schemas, mass-assignment tests, bounded sizes | PLANNED |
 | V6 Stored cryptography | KMS/envelope encryption for provider/Zapo secrets; no custom crypto | PLANNED |
 | V7 Error handling | RFC 9457 safe errors, trace IDs, no credential/content leakage | PLANNED |
 | V8 Data protection | classification, retention, encrypted backups, tenant deletion plan | PLANNED |
-| V9 Communications | TLS, Origin/CSRF checks, signed webhooks, replay dedupe | PLANNED |
+| V9 Communications | TLS, Origin/CSRF checks, signed webhooks, replay dedupe | CURRENT for IS-15/IS-34 Origin/CSRF evidence; webhook controls PLANNED |
 | V10 Malicious code | dependency lock, review, CodeQL, secret scanning, action pinning | PLANNED |
 | V11 Business logic | idempotency, rate limits, last-owner invariant, ambiguous delivery state | PLANNED |
 | V12 Files | quarantine, signature/type/size validation, malware scan, signed access | PLANNED |
 | V13 API | OpenAPI schemas, BOLA tests, pagination, tenant-filtered SSE | PLANNED |
 | V14 Configuration | `issuespan_app` is NOSUPERUSER/NOBYPASSRLS and does not own protected tables; local credentials are documented as non-production | CURRENT for IS-14 database evidence; deployment controls PLANNED |
-| V15 Architecture | modular boundaries, dependency direction, secure defaults | PLANNED |
+| V15 Architecture | modular boundaries, dependency direction, secure defaults | CURRENT for IS-14/IS-33/IS-34 boundaries; broader architecture PLANNED |
 | V16 Logging | Pino JSON, trace/span IDs, redaction, append-oriented AuditEvent | PLANNED |
-| V17 Testing | security corpus, RLS/RBAC, webhook, SSRF, XSS, failure injection | PLANNED |
+| V17 Testing | security corpus, RLS/RBAC, webhook, SSRF, XSS, failure injection | CURRENT for IS-15/IS-34 authentication and tenant evidence; broader corpus PLANNED |
 | V18 Web services | provider capability adapters, signature verification, timeouts/bulkheads | PLANNED |
 
 ## Evidence contract
@@ -40,3 +40,4 @@ Status: **CURRENT evidence only for the controls below; unlisted controls remain
 - Session protection: `apps/api/src/app.ts` hashes opaque tokens before persistence and revokes them on logout.
 - Tenant authorization: Membership produces TenantContext and `withTenantTransaction` applies it to RLS.
 - CSRF: API mutations require exact Origin and the double-submit CSRF value.
+- Authentication verification: Identity expiry/revocation tests and the PostgreSQL-backed authentication CI lane run in IS-34.
