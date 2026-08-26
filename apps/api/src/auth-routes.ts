@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import type { PrismaClient } from "@issuespan/database";
+import { withUserTransaction, type PrismaClient } from "@issuespan/database";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -103,10 +103,15 @@ export function registerAuthRoutes(app: FastifyInstance, options: AuthRouteOptio
   app.get("/api/v1/me", async (request, reply) => {
     const principal = await getPrincipal(request, cookieNames, options);
     refreshSessionCookie(request, reply, principal.idleExpiresAt, cookieNames, options);
-    const user = await options.database.user.findUniqueOrThrow({
-      where: { id: principal.userId },
-      include: { memberships: { include: { organization: true } } },
-    });
+    const user = await withUserTransaction(
+      options.database,
+      principal.userId,
+      (transaction) =>
+        transaction.user.findUniqueOrThrow({
+          where: { id: principal.userId },
+          include: { memberships: { include: { organization: true } } },
+        }),
+    );
 
     return {
       user: { id: user.id, email: user.email, displayName: user.displayName },

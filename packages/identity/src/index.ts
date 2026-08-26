@@ -1,7 +1,12 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import argon2 from "argon2";
-import type { PrismaClient } from "@issuespan/database";
-import type { TenantContext, TenantRole } from "@issuespan/database";
+import {
+  TenantAccessDeniedError,
+  withTenantTransaction,
+  type PrismaClient,
+  type TenantContext,
+  type TenantRole,
+} from "@issuespan/database";
 
 export const passwordPolicy = {
   type: argon2.argon2id,
@@ -87,21 +92,23 @@ export class Authorization {
 }
 
 /** Resolves a trusted tenant context only from a proven user Membership. */
-export async function resolveTenantContext(client: PrismaClient, userId: string, organizationId: string): Promise<TenantContext> {
-  const membership = await client.membership.findUnique({
-    where: { organizationId_userId: { organizationId, userId } },
-  });
-
-  if (!membership || !["OWNER", "ADMIN", "AGENT"].includes(membership.role)) {
-    throw new AuthorizationError("Organization access denied");
+export async function resolveTenantContext(
+  client: PrismaClient,
+  userId: string,
+  organizationId: string,
+): Promise<TenantContext> {
+  try {
+    return await withTenantTransaction(
+      client,
+      { organizationId, userId },
+      async (_transaction, context) => context,
+    );
+  } catch (error) {
+    if (error instanceof TenantAccessDeniedError) {
+      throw new AuthorizationError("Organization access denied");
+    }
+    throw error;
   }
-
-  return {
-    userId,
-    organizationId,
-    membershipId: membership.id,
-    role: membership.role as TenantRole,
-  };
 }
 
 export type SessionPrincipal = {

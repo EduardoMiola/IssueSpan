@@ -9,7 +9,7 @@ IssueSpan uses OWASP ASVS 5.0 as the control vocabulary. The first release targe
 | V1 Architecture | threat model, trust-boundary diagram, ADRs, abuse cases | PLANNED |
 | V2 Authentication | Argon2id, opaque hashed sessions, idle/absolute expiry, rotation | PLANNED |
 | V3 Session management | Secure HttpOnly `__Host-` cookie, revoke/list sessions, fixation tests | PLANNED |
-| V4 Access control | `packages/database` TenantContext guard, composite FKs, RLS policies, runtime-role and negative isolation tests | CURRENT for IS-14 database evidence; application authorization PLANNED |
+| V4 Access control | `packages/database` TenantContext guard, composite FKs, RLS policies, runtime-role and negative isolation tests | CURRENT for IS-14 and IS-33 database/API evidence; broader authorization PLANNED |
 | V5 Validation | explicit Zod command schemas, mass-assignment tests, bounded sizes | PLANNED |
 | V6 Stored cryptography | KMS/envelope encryption for provider/Zapo secrets; no custom crypto | PLANNED |
 | V7 Error handling | RFC 9457 safe errors, trace IDs, no credential/content leakage | PLANNED |

@@ -1,6 +1,6 @@
 # Testing and quality engineering
 
-Status: **CURRENT quality baseline; IS-14 adds the first real PostgreSQL evidence.**
+Status: **CURRENT quality baseline; IS-14 and IS-33 provide real PostgreSQL evidence.**
 
 The purpose of testing is executable evidence for architecture guarantees, not a coverage contest. IssueSpan has many fast domain tests, substantial real-infrastructure tests at PostgreSQL/Valkey/queue/provider boundaries, and a small number of expensive browser journeys.
 
@@ -22,7 +22,7 @@ The purpose of testing is executable evidence for architecture guarantees, not a
 
 SQLite is not a substitute for PostgreSQL: it cannot prove RLS, `SKIP LOCKED`, UUIDv7 behavior, composite constraints, or production transaction semantics. Testcontainers is the default for repository and integration evidence.
 
-IS-14 currently runs `pnpm db:validate`, `pnpm db:generate`, `pnpm db:migrate`, and `pnpm db:test` against PostgreSQL 18. The test command uses `DATABASE_TEST_URL` when supplied so a clean database can be exercised; the CI lane provisions the Compose PostgreSQL service. This is CURRENT evidence for the database boundary, not completion of the future API, queue, provider, or browser lanes.
+IS-14 currently runs `pnpm db:validate`, `pnpm db:generate`, `pnpm db:migrate`, and `pnpm db:test` against PostgreSQL 18. The test command uses `DATABASE_TEST_URL` when supplied so a clean database can be exercised; the CI lane provisions the Compose PostgreSQL service. IS-33 adds a Fastify-inject integration test that uses the same real database through the restricted runtime role for login, `/me`, and TenantContext authorization. This is CURRENT evidence for the database and IS-33 API boundary, not completion of the future queue, provider, or browser lanes.
 
 ## Deterministic test design
 
@@ -79,6 +79,6 @@ Coverage is a signal. A provisional lesson target is 80% line/function/statement
 Definition of Done includes changed-behavior tests, tenant/security review, failure semantics, docs/ADR updates when decisions change, observability fields, migration compatibility, and a clean diff. The concise explanation is: “Mocks prove local decisions; real infrastructure proves the boundaries where IssueSpan can lose data, cross a tenant, duplicate a provider effect, or split ownership.”
 # IS-15 authentication coverage
 
-Status: **CURRENT unit/API evidence; broader integration coverage remains PLANNED.**
+Status: **CURRENT unit/API evidence; IS-33 runtime-role integration is CURRENT; broader authentication coverage remains PLANNED.**
 
-`packages/identity/src/index.test.ts` covers Argon2id verification, wrong-password rejection, encoded-policy rehash detection, 256-bit opaque token generation, token hashing, and fail-closed capability authorization. `apps/api/src/app.test.ts` is CURRENT evidence for HttpOnly cookies, missing-CSRF rejection, and server-side revocation with a valid Origin. The existing real-PostgreSQL database suite remains evidence for RLS and transaction-local isolation. Expiry, wrong-Origin, and cross-tenant API integration coverage remain PLANNED.
+`packages/identity/src/index.test.ts` covers Argon2id verification, wrong-password rejection, encoded-policy rehash detection, 256-bit opaque token generation, token hashing, and fail-closed capability authorization. `apps/api/src/app.test.ts` is CURRENT evidence for HttpOnly cookies, missing-CSRF rejection, and server-side revocation with a valid Origin. `apps/api/src/runtime.integration.test.ts` is CURRENT real-PostgreSQL evidence for the restricted role, login, `/me`, valid Membership-derived TenantContext, and non-member denial. Expiry and wrong-Origin coverage remain PLANNED under IS-34.
