@@ -12,6 +12,8 @@ HttpOnly does not solve XSS. Browser mutations require a non-authentication CSRF
 
 The first API boundary also applies an in-process, IP-plus-email, five-attempt/15-minute login rate limit. It is deliberately non-authoritative and process-local; distributed Valkey enforcement is **DEFERRED** until deployment topology and measured abuse require it.
 
+Identity is isolated behind database-free ports and an application service in `packages/identity`. The Prisma repositories live in `apps/api/src/identity-adapter.ts`, the composition/infrastructure boundary that maps persistence records to Identity DTOs and invokes the database transaction helpers. API routes depend only on `IdentityService`; this keeps authentication policy testable without Prisma and prevents database types from crossing the Identity boundary.
+
 Authentication proves who the user is. Tenant resolution identifies the Organization from the server-side session and membership. Authorization checks whether that principal can perform the operation on that resource. These are separate steps and must remain separate in code and tests.
 
 ## Sessions and credentials

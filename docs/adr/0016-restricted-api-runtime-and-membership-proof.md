@@ -18,4 +18,4 @@ The Prisma schema explicitly maps its camelCase fields to the existing snake_cas
 
 ## Consequences
 
-Tenant selectors are not authority, missing context fails closed, and migration credentials are unnecessary at runtime. Identity ports/adapters and wider authentication CI remain tracked separately in IS-34.
+Tenant selectors are not authority, missing context fails closed, and migration credentials are unnecessary at runtime. IS-34 implements the Identity ports/adapters and authentication CI described in ADR-0017; tooling/version alignment remains tracked in IS-35.

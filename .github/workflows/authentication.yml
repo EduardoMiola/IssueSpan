@@ -1,0 +1,51 @@
+name: authentication
+
+on:
+  pull_request:
+    paths:
+      - "apps/api/**"
+      - "packages/identity/**"
+      - "packages/database/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/authentication.yml"
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://issuespan:issuespan-local-only@localhost:5432/issuespan
+      DATABASE_APP_URL: postgresql://issuespan_app:issuespan-app-local-only@localhost:5432/issuespan
+      DATABASE_TEST_URL: postgresql://issuespan:issuespan-local-only@localhost:5432/issuespan
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: issuespan
+          POSTGRES_USER: issuespan
+          POSTGRES_PASSWORD: issuespan-local-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U issuespan -d issuespan"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:validate
+      - run: pnpm db:generate
+      - run: pnpm db:migrate
+      - run: pnpm typecheck
+      - run: pnpm db:test
+      - run: pnpm --filter @issuespan/identity test
+      - run: pnpm --filter @issuespan/api test
