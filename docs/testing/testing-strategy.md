@@ -1,6 +1,6 @@
 # Testing and quality engineering
 
-Status: **CURRENT quality baseline; IS-14 and IS-33 provide real PostgreSQL evidence.**
+Status: **CURRENT quality baseline; Node.js 24, Zod 4, and Vitest 4 are enforced by IS-35; IS-14 and IS-33 provide real PostgreSQL evidence.**
 
 The purpose of testing is executable evidence for architecture guarantees, not a coverage contest. IssueSpan has many fast domain tests, substantial real-infrastructure tests at PostgreSQL/Valkey/queue/provider boundaries, and a small number of expensive browser journeys.
 
