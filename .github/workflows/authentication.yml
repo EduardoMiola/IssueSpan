@@ -5,7 +5,9 @@ on:
     paths:
       - "apps/api/**"
       - "packages/identity/**"
+      - "packages/conversations/**"
       - "packages/database/**"
+      - "tools/check-boundaries.mjs"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -45,7 +47,9 @@ jobs:
       - run: pnpm db:validate
       - run: pnpm db:generate
       - run: pnpm db:migrate
+      - run: pnpm architecture:check
       - run: pnpm typecheck
       - run: pnpm db:test
       - run: pnpm --filter @issuespan/identity test
+      - run: pnpm --filter @issuespan/conversations test
       - run: pnpm --filter @issuespan/api test

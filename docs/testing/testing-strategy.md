@@ -24,6 +24,8 @@ SQLite is not a substitute for PostgreSQL: it cannot prove RLS, `SKIP LOCKED`, U
 
 IS-14 currently runs `pnpm db:validate`, `pnpm db:generate`, `pnpm db:migrate`, and `pnpm db:test` against PostgreSQL 18. The test command uses `DATABASE_TEST_URL` when supplied so a clean database can be exercised; the CI lane provisions the Compose PostgreSQL service. IS-33 adds a Fastify-inject integration test that uses the same real database through the restricted runtime role for login, `/me`, and TenantContext authorization. IS-34 adds database-free Identity application tests, API security tests for expiry/revocation/Origin/CSRF and response redaction, and a dedicated authentication CI lane. This is CURRENT evidence for the database and authentication boundary, not completion of the future queue, provider, or browser lanes.
 
+IS-17 adds the Conversations bounded context with pure aggregate/application tests, fail-closed TenantContext checks, and a PostgreSQL adapter integration test proving a foreign Conversation ID is invisible through the restricted runtime role. `pnpm architecture:check` scans Identity and Conversations boundary code for forbidden infrastructure imports and runs in the authentication/database CI lanes.
+
 ## Deterministic test design
 
 Builders use explicit Organization and User IDs. Factories are small and deterministic; random Faker data is reserved for properties that need it. Inject a Clock and ID generator into application code so retries and timestamps can be reproduced. Each test worker receives a unique database/schema, or tests are serialized initially. Transaction rollback is not universal because workers use independent connections.

@@ -24,6 +24,7 @@ ADRs use a lightweight MADR format: title, status, context, decision, alternativ
 | [0016](0016-restricted-api-runtime-and-membership-proof.md) | Restricted API runtime and Membership proof | ACCEPTED |
 | [0017](0017-identity-ports-and-authentication-verification.md) | Identity ports and authentication verification | ACCEPTED |
 | [0018](0018-tooling-runtime-baseline.md) | Tooling and runtime baseline | ACCEPTED |
+| [0019](0019-conversation-bounded-context.md) | Conversation bounded context boundaries | ACCEPTED |
 
 ## Prior decision groups
 

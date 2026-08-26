@@ -1,6 +1,6 @@
 # Domain, DDD, and module boundaries
 
-Status: **CURRENT design baseline; planned implementation.**
+Status: **CURRENT design baseline; Conversations implementation is CURRENT for IS-17; broader domain modules remain planned.**
 
 ## Strategic DDD
 
