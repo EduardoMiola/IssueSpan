@@ -1,6 +1,7 @@
 import type { PrismaClient } from "./generated/client/client.js";
 
 type TransactionClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+type MembershipProof = { id: string; role: string };
 
 export type TenantRole = "OWNER" | "ADMIN" | "AGENT";
 export type TenantSelector = { organizationId: string; userId: string };
@@ -29,14 +30,7 @@ export async function withTenantTransaction<T>(
     await setTransactionContext(transaction, "app.organization_id", selector.organizationId);
     await setTransactionContext(transaction, "app.user_id", selector.userId);
 
-    const membership = await transaction.membership.findUnique({
-      where: {
-        organizationId_userId: {
-          organizationId: selector.organizationId,
-          userId: selector.userId,
-        },
-      },
-    });
+    const membership = await lockMembership(transaction, selector);
     if (!membership || !isTenantRole(membership.role)) {
       throw new TenantAccessDeniedError("Organization access denied");
     }
@@ -48,6 +42,21 @@ export async function withTenantTransaction<T>(
     };
     return callback(transaction, context);
   }, { isolationLevel: "ReadCommitted" });
+}
+
+/** Keeps the authorization proof current until all tenant work commits or rolls back. */
+async function lockMembership(
+  transaction: TransactionClient,
+  selector: TenantSelector,
+): Promise<MembershipProof | undefined> {
+  const [membership] = await transaction.$queryRaw<MembershipProof[]>`
+    SELECT id, role
+    FROM memberships
+    WHERE organization_id = ${selector.organizationId}::uuid
+      AND user_id = ${selector.userId}::uuid
+    FOR SHARE
+  `;
+  return membership;
 }
 
 /** Gives an authenticated user visibility only to their own Membership rows. */

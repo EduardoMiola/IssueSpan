@@ -99,16 +99,22 @@ describe("PostgreSQL 18 tenancy foundation", () => {
   it("proves membership before exposing a tenant transaction", async () => {
     const client = createDatabaseClient(runtimeUrl(adminUrl));
     try {
-      const context = await withTenantTransaction(
+      const proof = await withTenantTransaction(
         client,
         { organizationId: tenantA, userId: userA },
-        async (_transaction, trusted) => trusted,
+        async (transaction, context) => ({
+          context,
+          visibleOrganizations: (
+            await transaction.membership.findMany({ select: { organizationId: true } })
+          ).map(({ organizationId }) => organizationId),
+        }),
       );
-      expect(context).toMatchObject({
+      expect(proof.context).toMatchObject({
         organizationId: tenantA,
         userId: userA,
         role: "OWNER",
       });
+      expect(proof.visibleOrganizations).toEqual([tenantA]);
 
       const deniedContext = withTenantTransaction(
         client,
@@ -123,6 +129,36 @@ describe("PostgreSQL 18 tenancy foundation", () => {
       });
       await expect(missingContext).rejects.toBeInstanceOf(TenantAccessDeniedError);
       expect(callbackWasCalled).toBe(false);
+    } finally {
+      await client.$disconnect();
+    }
+  });
+
+  it("locks the Membership proof against role changes until tenant work completes", async () => {
+    const client = createDatabaseClient(runtimeUrl(adminUrl));
+    try {
+      await withTenantTransaction(
+        client,
+        { organizationId: tenantA, userId: userA },
+        async () => {
+          const revoker = await admin.connect();
+          try {
+            await revoker.query("BEGIN");
+            try {
+              await revoker.query("SET LOCAL lock_timeout = '100ms'");
+              const roleChange = revoker.query(
+                "UPDATE memberships SET role = 'AGENT' WHERE organization_id = $1 AND user_id = $2",
+                [tenantA, userA],
+              );
+              await expect(roleChange).rejects.toMatchObject({ code: "55P03" });
+            } finally {
+              await revoker.query("ROLLBACK");
+            }
+          } finally {
+            revoker.release();
+          }
+        },
+      );
     } finally {
       await client.$disconnect();
     }

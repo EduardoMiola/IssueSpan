@@ -9,4 +9,7 @@ CREATE POLICY memberships_tenant_access ON memberships
 -- whose policy evaluation has no WITH CHECK clause.
 CREATE POLICY memberships_user_read ON memberships
   FOR SELECT
-  USING (user_id = NULLIF(current_setting('app.user_id', true), '')::uuid);
+  USING (
+    NULLIF(current_setting('app.organization_id', true), '') IS NULL
+    AND user_id = NULLIF(current_setting('app.user_id', true), '')::uuid
+  );

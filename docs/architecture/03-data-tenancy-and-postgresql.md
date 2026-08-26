@@ -1,6 +1,6 @@
 # Data, tenancy, and PostgreSQL
 
-Status: **CURRENT foundation implemented in IS-14; application integration remains PLANNED.**
+Status: **CURRENT database foundation and authenticated API integration; broader application services remain PLANNED.**
 
 This document defines the first persistence model for IssueSpan. Tenant isolation is a chain of independent controls, and every link must be testable.
 
