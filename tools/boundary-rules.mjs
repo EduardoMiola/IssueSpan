@@ -24,7 +24,7 @@ const runtimeAndProviderPrefixes = [
 ];
 
 const importSpecifierPattern =
-  /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s*)["']([^"']+)["']/g;
+  /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s*)(["'`])([^"'`]+)\1/g;
 
 export function isBoundarySource(root, filePath) {
   const relativePath = relative(root, filePath);
@@ -35,7 +35,11 @@ export function isBoundarySource(root, filePath) {
 export function findForbiddenImports(source, options = {}) {
   const violations = [];
   for (const match of source.matchAll(importSpecifierPattern)) {
-    const specifier = match[1];
+    const quote = match[1];
+    const specifier = match[2];
+    if (quote === "`" && specifier.includes("${")) {
+      continue;
+    }
     if (isRuntimeOrProviderSpecifier(specifier)) {
       violations.push(specifier);
       continue;

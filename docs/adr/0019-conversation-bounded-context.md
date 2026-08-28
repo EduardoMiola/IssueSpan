@@ -16,4 +16,4 @@ Conversation transitions are explicit: `OPEN` and `PENDING` can resolve, only `R
 
 ## Consequences
 
-The domain can be tested deterministically without a database, while adapter integration tests prove RLS behavior against PostgreSQL. Conversation delivery is not yet durable or provider-backed; those concerns belong to IS-19 and later messaging work.
+The domain can be tested deterministically without a database, while adapter integration tests prove RLS behavior against PostgreSQL. Conversation delivery is not yet durable or provider-backed; those concerns belong to IS-19 and later messaging work. Until IS-19 replaces the post-commit messaging and event-port requests with transactional outbox intents, a port failure can occur after conversation state has committed. Callers must not interpret a successful boundary request as provider delivery confirmation.

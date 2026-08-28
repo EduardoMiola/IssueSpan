@@ -8,6 +8,8 @@ on:
       - "packages/conversations/**"
       - "packages/database/**"
       - "tools/check-boundaries.mjs"
+      - "tools/boundary-rules.mjs"
+      - "tools/boundary-rules.test.mjs"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"

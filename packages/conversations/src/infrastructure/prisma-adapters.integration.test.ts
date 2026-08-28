@@ -9,7 +9,11 @@ import type { ConversationSnapshot } from "../domain.js";
 
 config({ path: fileURLToPath(new URL("../../../../.env", import.meta.url)) });
 
-const adminUrl = process.env.DATABASE_TEST_URL ?? process.env.DATABASE_URL;
+const adminUrl = resolveTestDatabaseUrl(
+  process.env.DATABASE_TEST_URL,
+  process.env.DATABASE_URL,
+  process.env.CI === "true" && process.env.GITHUB_ACTIONS === "true",
+);
 const runtimeUrl = adminUrl ? withRuntimeCredentials(adminUrl) : undefined;
 const integration = describe.skipIf(!adminUrl);
 const tenantA: TenantContext = {
@@ -22,6 +26,40 @@ const tenantB = "00000000-0000-7000-8000-000000000102";
 const conversationA = "00000000-0000-7000-8000-000000000131";
 const conversationB = "00000000-0000-7000-8000-000000000132";
 const messageB = "00000000-0000-7000-8000-000000000141";
+
+describe("integration database safety", () => {
+  it("requires an explicitly named test database outside ephemeral GitHub Actions", () => {
+    expect(() =>
+      resolveTestDatabaseUrl(
+        "postgresql://user:password@localhost:5432/issuespan",
+        undefined,
+        false,
+      ),
+    ).toThrow(/dedicated test database/);
+
+    expect(
+      resolveTestDatabaseUrl(
+        "postgresql://user:password@localhost:5432/issuespan_test",
+        undefined,
+        false,
+      ),
+    ).toBe("postgresql://user:password@localhost:5432/issuespan_test");
+
+    expect(() =>
+      resolveTestDatabaseUrl("https://localhost/issuespan_test", undefined, false),
+    ).toThrow(/PostgreSQL URL/);
+  });
+
+  it("allows the ephemeral localhost database provisioned by GitHub Actions", () => {
+    expect(
+      resolveTestDatabaseUrl(
+        "postgresql://user:password@localhost:5432/issuespan",
+        "postgresql://user:password@localhost:5432/issuespan",
+        true,
+      ),
+    ).toBe("postgresql://user:password@localhost:5432/issuespan");
+  });
+});
 
 integration("Prisma conversation adapter", () => {
   const admin = adminUrl ? createDatabaseClient(adminUrl) : undefined;
@@ -205,4 +243,46 @@ function withRuntimeCredentials(url: string): string {
   parsed.username = "issuespan_app";
   parsed.password = "issuespan-app-local-only";
   return parsed.toString();
+}
+
+function resolveTestDatabaseUrl(
+  testDatabaseUrl: string | undefined,
+  applicationDatabaseUrl: string | undefined,
+  isGitHubActions: boolean,
+): string | undefined {
+  if (!testDatabaseUrl) {
+    return undefined;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(testDatabaseUrl);
+  } catch {
+    throw new Error("DATABASE_TEST_URL must be a valid PostgreSQL URL");
+  }
+
+  if (!["postgres:", "postgresql:"].includes(parsed.protocol)) {
+    throw new Error("DATABASE_TEST_URL must be a valid PostgreSQL URL");
+  }
+
+  const databaseName = decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
+  const hasDedicatedTestName = /(?:^|[-_])test(?:$|[-_])/.test(databaseName.toLowerCase());
+  const isEphemeralGitHubDatabase =
+    isGitHubActions && ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname);
+
+  if (!hasDedicatedTestName && !isEphemeralGitHubDatabase) {
+    throw new Error(
+      "DATABASE_TEST_URL must point to a dedicated test database (for example, issuespan_test)",
+    );
+  }
+
+  if (
+    !isEphemeralGitHubDatabase
+    && applicationDatabaseUrl
+    && new URL(applicationDatabaseUrl).toString() === parsed.toString()
+  ) {
+    throw new Error("DATABASE_TEST_URL must not be the same as DATABASE_URL");
+  }
+
+  return testDatabaseUrl;
 }

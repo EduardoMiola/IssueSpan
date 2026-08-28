@@ -11,6 +11,7 @@ test("detects infrastructure imports across supported module syntaxes", () => {
     import { PrismaClient } from "@prisma/client";
     import type { Database } from "@issuespan/database";
     import("bullmq");
+    await import(\`fastify\`);
     require("@whiskeysockets/baileys");
     import Fastify from "fastify";
   `;
@@ -19,9 +20,14 @@ test("detects infrastructure imports across supported module syntaxes", () => {
     "@prisma/client",
     "@issuespan/database",
     "bullmq",
+    "fastify",
     "@whiskeysockets/baileys",
     "fastify",
   ]);
+});
+
+test("ignores non-static template-literal imports that cannot be resolved", () => {
+  assert.deepEqual(findForbiddenImports("await import(`fastify/${plugin}`);"), []);
 });
 
 test("allows domain and application dependencies", () => {
