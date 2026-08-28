@@ -42,6 +42,25 @@ importers:
         specifier: ^4.0.0
         version: 4.1.11(@types/node@24.13.3)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(tsx@4.23.12))
 
+  packages/conversations:
+    dependencies:
+      '@issuespan/database':
+        specifier: workspace:*
+        version: link:../database
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.13.3
+      dotenv:
+        specifier: ^17.2.1
+        version: 17.4.2
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.0
+        version: 4.1.11(@types/node@24.13.3)(vite@7.3.6(@types/node@24.13.3)(jiti@2.7.0)(tsx@4.23.12))
+
   packages/database:
     dependencies:
       '@prisma/adapter-pg':

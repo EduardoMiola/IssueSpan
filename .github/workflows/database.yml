@@ -4,11 +4,19 @@ on:
   pull_request:
     paths:
       - "packages/database/**"
+      - "packages/identity/**"
+      - "packages/conversations/**"
+      - "tools/check-boundaries.mjs"
+      - "tools/boundary-rules.mjs"
+      - "tools/boundary-rules.test.mjs"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "compose.yaml"
       - ".github/workflows/database.yml"
+
+permissions:
+  contents: read
 
 jobs:
   postgres:
@@ -18,6 +26,8 @@ jobs:
       DATABASE_TEST_URL: postgresql://issuespan:issuespan-local-only@localhost:5432/issuespan
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10.15.0
@@ -26,6 +36,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm architecture:check
       - run: docker compose up -d postgres
       - run: pnpm db:validate
       - run: pnpm db:generate

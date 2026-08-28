@@ -1,6 +1,6 @@
 # Domain, DDD, and module boundaries
 
-Status: **CURRENT design baseline; planned implementation.**
+Status: **CURRENT design baseline; Conversations implementation is CURRENT for IS-17; broader domain modules remain planned.**
 
 ## Strategic DDD
 
@@ -22,7 +22,7 @@ Bounded contexts:
 
 An aggregate root owns invariants and exposes behavior; a relationship does not automatically imply ownership. A `Conversation` may reference a `CustomerAccount`, but it does not own the account lifecycle. A `Message` is a separate aggregate root because delivery state, provider identifiers, dedupe, retries, and provider acknowledgements have a different consistency boundary from conversation metadata.
 
-Planned roots include `Organization`, `Membership`, `Session`, `CustomerAccount`, `Conversation`, `Message`, `ChannelConnection`, `EngineeringIssue`, and `IntegrationConnection`. `Contact` begins as a customer-context entity/value-bearing record whose identity matching rules are explicit; it is not silently merged into `CustomerAccount` just because a provider exposes a contact object.
+Implemented roots include `Conversation` and `Message`. Planned roots include `Organization`, `Membership`, `Session`, `CustomerAccount`, `ChannelConnection`, `EngineeringIssue`, and `IntegrationConnection`. `Contact` begins as a customer-context entity/value-bearing record whose identity matching rules are explicit; it is not silently merged into `CustomerAccount` just because a provider exposes a contact object.
 
 `EngineeringIssue` is local IssueSpan state. `ExternalIssueLink` associates it with a GitHub, Linear, or Jira issue without making the provider's aggregate part of IssueSpan's transaction. A provider saying “resolved” never directly resolves a Conversation.
 

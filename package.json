@@ -4,7 +4,9 @@
   "packageManager": "pnpm@10.15.0",
   "engines": { "node": ">=24 <25" },
   "scripts": {
-    "typecheck": "pnpm --filter @issuespan/database typecheck && pnpm --filter @issuespan/identity typecheck && pnpm --filter @issuespan/api typecheck",
+    "architecture:check": "node --test tools/boundary-rules.test.mjs && node tools/check-boundaries.mjs",
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm db:validate",
+    "typecheck": "pnpm architecture:check && pnpm --filter @issuespan/database typecheck && pnpm --filter @issuespan/identity typecheck && pnpm --filter @issuespan/conversations typecheck && pnpm --filter @issuespan/api typecheck",
     "test": "pnpm -r --if-present test",
     "build": "pnpm -r --if-present build",
     "db:generate": "pnpm --filter @issuespan/database db:generate",

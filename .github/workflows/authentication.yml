@@ -5,11 +5,18 @@ on:
     paths:
       - "apps/api/**"
       - "packages/identity/**"
+      - "packages/conversations/**"
       - "packages/database/**"
+      - "tools/check-boundaries.mjs"
+      - "tools/boundary-rules.mjs"
+      - "tools/boundary-rules.test.mjs"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - ".github/workflows/authentication.yml"
+
+permissions:
+  contents: read
 
 jobs:
   auth:
@@ -34,6 +41,8 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10.15.0
@@ -45,7 +54,9 @@ jobs:
       - run: pnpm db:validate
       - run: pnpm db:generate
       - run: pnpm db:migrate
+      - run: pnpm architecture:check
       - run: pnpm typecheck
       - run: pnpm db:test
       - run: pnpm --filter @issuespan/identity test
+      - run: pnpm --filter @issuespan/conversations test
       - run: pnpm --filter @issuespan/api test
