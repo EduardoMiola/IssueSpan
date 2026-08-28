@@ -8,11 +8,11 @@ IS-17 is the first product bounded context after the database and Identity found
 
 ## Decision
 
-`packages/conversations` separates the Conversation aggregate and Message relationship, application use cases, ports, and Prisma infrastructure adapters. `ConversationApplicationService` requires a server-derived TenantContext for every tenant-owned operation, persists through repository ports, and emits domain events. Messaging is a port; provider delivery and transactional outbox orchestration remain later work.
+`packages/conversations` separates the Conversation aggregate and Message relationship, application use cases, ports, and Prisma infrastructure adapters. `ConversationApplicationService` requires a server-derived TenantContext for every tenant-owned operation, persists through repository ports, and emits domain events. A persistence unit-of-work port keeps Message insertion and Conversation activity/lifecycle updates in one restricted-role tenant transaction. Messaging is a port; provider delivery and transactional outbox orchestration remain later work.
 
 Conversation transitions are explicit: `OPEN` and `PENDING` can resolve, only `RESOLVED` can reopen, and only `OPEN` can become `PENDING` for an outbound reply. Inbound messages record activity without allowing a caller to supply a different organization. The Prisma adapter delegates every tenant operation to `withTenantTransaction`.
 
-`tools/check-boundaries.mjs` is a reusable CI check for Identity and Conversations domain/application imports. It fails on database, runtime, or provider infrastructure imports and runs before typechecking in the relevant workflows.
+`tools/check-boundaries.mjs` is a reusable CI check for Identity and Conversations source code, including nested domain, application, ports, and public paths. Its tested rules permit persistence dependencies only in infrastructure adapters while rejecting runtime and provider coupling throughout the bounded context, and run before typechecking in the relevant workflows.
 
 ## Consequences
 

@@ -13,6 +13,9 @@ on:
       - "pnpm-workspace.yaml"
       - ".github/workflows/authentication.yml"
 
+permissions:
+  contents: read
+
 jobs:
   auth:
     runs-on: ubuntu-latest
@@ -36,6 +39,8 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10.15.0

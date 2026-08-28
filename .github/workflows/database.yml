@@ -13,6 +13,9 @@ on:
       - "compose.yaml"
       - ".github/workflows/database.yml"
 
+permissions:
+  contents: read
+
 jobs:
   postgres:
     runs-on: ubuntu-latest
@@ -21,6 +24,8 @@ jobs:
       DATABASE_TEST_URL: postgresql://issuespan:issuespan-local-only@localhost:5432/issuespan
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10.15.0
